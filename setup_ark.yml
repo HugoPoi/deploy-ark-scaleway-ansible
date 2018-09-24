@@ -1,0 +1,36 @@
+# SCW_API_KEY='XXX' ansible-playbook ./test/legacy/scaleway_compute.yml
+- name: Deploy a server for ARK Survival
+  hosts: ark
+  gather_facts: no
+  remote_user: root
+  environment:
+    #    SCW_API_KEY: ""
+  tasks:
+    - name: Set real hostname
+      set_fact:
+        # You may want to use priv.cloud.scaleway.com if you use a bastion
+        ansible_host: "{{inventory_hostname}}.pub.cloud.scaleway.com"
+        # You can also use ANSIBLE_PRIVATE_KEY_FILE env instead of this
+        ansible_private_key_file: ~/.ssh/scaleway_perso
+    - name: Add non-free packages repository
+      template:
+        src: sources.list
+        dest: /etc/apt/sources.list
+    - name: Add i386 package
+      command: dpkg --add-architecture i386
+    - name: Accept Steam license
+      debconf:
+        name: steamcmd
+        question: steam/question
+        value: 'I AGREE'
+        vtype: select
+    - name: Create steam user
+      user:
+        name: steam
+        comment: For running steam apps
+        generate_ssh_key: no
+    - name: Update repositories cache and install steam package
+      apt:
+        update_cache: yes
+        name: steamcmd:i386
+
