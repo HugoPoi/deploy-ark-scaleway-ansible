@@ -33,4 +33,24 @@
       apt:
         update_cache: yes
         name: steamcmd:i386
+    - name: Install dependencies for ark-server-tools
+      apt:
+        update_cache: no
+        name: "{{ packages }}"
+      vars:
+        packages:
+          - perl-modules
+          - curl
+          - lsof
+          - libc6-i386
+          - lib32gcc1
+          - bzip2
+    - name: Download Ark Manager setup
+      get_url:
+        url: https://raw.githubusercontent.com/FezVrasta/ark-server-tools/master/netinstall.sh
+        dest: /tmp/install_arkmanager.sh
+    - name: Install Ark Manager
+      command: bash /tmp/install_arkmanager.sh steam
+      args:
+        creates: /etc/arkmanager/arkmanager.cfg
 
