@@ -1,22 +1,12 @@
-# SCW_API_KEY='XXX' ansible-playbook ./test/legacy/scaleway_compute.yml
+# SCW_API_KEY='XXX' ansible-playbook deploy_ark.yml
 - name: Deploy a server for ARK Survival
   hosts: localhost
+  connection: local
   gather_facts: no
-  environment:
-    #    SCW_API_KEY: ""
   tasks:
-  - name: Run it
-    scaleway_compute:
-      name: ark-test
-      state: running
-      image: da6ebdf0-cb8f-4c5b-92cd-fd3a6929f75d
-      organization: c3d0141f-ab1a-47e2-84bb-6652a7f640be
-      region: par1
-      commercial_type: VC1S
-      wait: true
-      tags:
-        - test
-        - ark
-        - gaming
+  - name: Deploy server and launch it
+    include: tasks/provision.yml server_name={{item}}
+    with_items:
+      - manny
 
 

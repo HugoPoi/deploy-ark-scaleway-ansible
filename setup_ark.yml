@@ -1,17 +1,9 @@
-# SCW_API_KEY='XXX' ansible-playbook ./test/legacy/scaleway_compute.yml
+# SCW_API_KEY='XXX' ansible-playbook setup_ark.yml -i scaleway_inventory.yml
 - name: Deploy a server for ARK Survival
   hosts: ark
-  gather_facts: no
+  gather_facts: yes
   remote_user: root
-  environment:
-    #    SCW_API_KEY: ""
   tasks:
-    - name: Set real hostname
-      set_fact:
-        # You may want to use priv.cloud.scaleway.com if you use a bastion
-        ansible_host: "{{inventory_hostname}}.pub.cloud.scaleway.com"
-        # You can also use ANSIBLE_PRIVATE_KEY_FILE env instead of this
-        ansible_private_key_file: ~/.ssh/scaleway_perso
     - name: Add non-free packages repository
       template:
         src: sources.list
@@ -53,4 +45,24 @@
       command: bash /tmp/install_arkmanager.sh steam
       args:
         creates: /etc/arkmanager/arkmanager.cfg
-
+    - name: Install ARK Survival From Steam
+      command: arkmanager install
+      args:
+        creates: /home/steam/ARK
+    - name: Copy arkmanager instance config
+      template:
+        src: manny.cfg.j2
+        dest: /etc/arkmanager/instances/manny.cfg
+    - name: Ensures ARK conf dir
+      become_user: steam
+      file:
+        path: /home/steam/ARK/ShooterGame/Saved/Config/LinuxServer
+        state: directory
+    - name: Copy ARK config Game.ini
+      template:
+        src: Game.ini.j2
+        dest: /home/steam/ARK/ShooterGame/Saved/Config/LinuxServer/Game.ini
+    - name: Copy ARK config GameUserSettings.ini
+      template:
+        src: GameUserSettings.ini.j2
+        dest: /home/steam/ARK/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini

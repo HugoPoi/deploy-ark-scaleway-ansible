@@ -1,0 +1,18 @@
+---
+# Variables listed here are applicable to all host groups
+
+scaleway:
+  api_token: "{{ lookup('env', 'SCW_API_KEY')}}"
+  images_uuid:
+    debian_stretch: da6ebdf0-cb8f-4c5b-92cd-fd3a6929f75d
+  organization_id: c3d0141f-ab1a-47e2-84bb-6652a7f640be
+  region: par1
+  api_url: https://cp-par1.scaleway.com/
+  commercial_type: START1-M
+# This not work because it does GiB "{{ '150GB' | human_to_bytes }}"
+# 150 GB allocation
+volume_size: 50000000000
+tags:
+  - ark
+  - gaming
+#ansible_private_key_file: ../secrets/id_rsa

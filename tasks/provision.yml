@@ -1,0 +1,43 @@
+- name: Provision server
+  scaleway_compute:
+    api_token: "{{ scaleway.api_token }}"
+    name: "{{server_name}}"
+    state: present
+    image: "{{ scaleway.images_uuid.debian_stretch }}"
+    organization: "{{ scaleway.organization_id }}"
+    region: "{{ scaleway.region }}"
+    commercial_type: "{{scaleway.commercial_type}}"
+    wait: true
+    tags: "{{tags}}"
+  register: server_info
+- name: Provision additional volume 1
+  scaleway_volume:
+    api_token: "{{ scaleway.api_token }}"
+    organization: "{{ scaleway.organization_id }}"
+    region: "{{ scaleway.region }}"
+    volume_type: l_ssd
+    state: present
+    size: "{{ volume_size }}"
+    name: "{{server_name}}-vol1"
+  register: volume1
+- name: Attach volume to server
+  uri:
+    url: "{{scaleway.api_url}}servers/{{server_info.msg.id}}"
+    method: PUT
+    body_format: json
+    body: "{{ server_info.msg | combine( { 'volumes': { '0': server_info.msg.volumes['0'], '1': volume1.data.volume } } ) }}"
+    headers:
+      X-Auth-Token: "{{scaleway.api_token}}"
+    status_code: 200
+  when: volume1.data is defined
+- name: Start server
+  scaleway_compute:
+    api_token: "{{ scaleway.api_token }}"
+    name: "{{server_name}}"
+    state: running
+    image: "{{ scaleway.images_uuid.debian_stretch }}"
+    organization: "{{ scaleway.organization_id }}"
+    region: "{{ scaleway.region }}"
+    commercial_type: "{{scaleway.commercial_type}}"
+    wait: true
+    tags: "{{tags}}"
